@@ -330,7 +330,7 @@ class JobController extends Controller
         } else {
             return response()->json([
                 'message' => 'Unauthenticated'
-            ], 104);
+            ], 401);
         }
     }
 }
