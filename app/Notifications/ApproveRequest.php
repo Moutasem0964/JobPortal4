@@ -30,7 +30,7 @@ class ApproveRequest extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database', 'broadcast'];
+        return ['database',];
     }
 
     /**
@@ -38,8 +38,9 @@ class ApproveRequest extends Notification
      */
     public function toDatabase(object $notifiable)
     {
+        $company_name=$this->job->company()->first()->company_Name;
         return [
-            'company' => $this->job->company()->first()->company_Name,
+            'company_name' => $company_name,
             'job_id' => $this->job->id,
             'job_title' => $this->job->job_title,
         ];
