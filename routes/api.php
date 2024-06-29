@@ -8,6 +8,7 @@ use App\Http\Controllers\ExperienceController;
 use App\Http\Controllers\JobController;
 use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\EducationController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\TargetJobController;
@@ -42,6 +43,7 @@ Route::put('admin/disable_user',[UserController::class,'disable']);
 Route::put('admin/enable_user',[UserController::class,'enable']);
 Route::post('admin/search',[AdminController::class,'search']);
 Route::delete('admin/delete_job',[JobController::class,'delete']);
+Route::get('admin/get_notifications',[NotificationController::class,'get_admin_notifications']);
 
 
 Route::post('user/register',[UserController::class,'register']);

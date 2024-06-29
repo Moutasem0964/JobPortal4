@@ -39,22 +39,22 @@ class ApproveRequest extends Notification
     public function toDatabase(object $notifiable)
     {
         return [
-            'company' => $this->job->company()->first()->company_Name, // Fix the method name
+            'company' => $this->job->company()->first()->company_Name,
             'job_id' => $this->job->id,
             'job_title' => $this->job->job_title,
         ];
     }
 
-    public function toBroadcast($notifiable)
-    {
-        $company = $this->job->company()->first()->company_Name; // Fix the method name
-        Log::info('toBroadcast notification');
-        return new BroadcastMessage([
-            'message' => 'A new job has been posted by ' . $company,
-            'job_id' => $this->job->id,
-            'job_title' => $this->job->title,
-        ]);
-    }
+    // public function toBroadcast($notifiable)
+    // {
+    //     $company = $this->job->company()->first()->company_Name; // Fix the method name
+    //     Log::info('toBroadcast notification');
+    //     return new BroadcastMessage([
+    //         'message' => 'A new job has been posted by ' . $company,
+    //         'job_id' => $this->job->id,
+    //         'job_title' => $this->job->title,
+    //     ]);
+    // }
 
     /**
      * Get the array representation of the notification.
