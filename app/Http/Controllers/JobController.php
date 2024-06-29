@@ -3,12 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Admin;
+use App\Models\AdminAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Job;
 use App\Models\Company;
 use App\Notifications\ApproveRequest;
-
+use App\Notifications\JobApproved;
 class JobController extends Controller
 {
     public function addJob(Request $request)
@@ -66,7 +67,7 @@ class JobController extends Controller
         /** @var App\Models\Compnay $company */
         if ($company = Auth::guard('company')->user()) {
             $job = Job::where('id', $request->header('id'))->first();
-            if ($job && !$job->disabled_by_admin && $job->company_id == $company->id) {
+            if ($job && !$job->disabled_by_admin &&!$job->status &&$job->company_id == $company->id) {
                 $job->status = 1;
                 $job->save();
                 return response()->json([
@@ -77,12 +78,21 @@ class JobController extends Controller
                     'message' => 'cant enable job'
                 ], 403);
             }
-        } elseif (Auth::guard('admin')->user()) {
+        } elseif (Auth::guard('admin')->check()) {
+            /** @var App\Models\Admin $admin */
+            $admin = Auth::guard('admin')->user();
             $job = Job::where('id', $request->header('id'))->first();
-            if ($job) {
+            if ($job&&!$job->status) {
                 $job->status = 1;
                 $job->disabled_by_admin = 0;
                 $job->save();
+                $admin->AdminActions()->create([
+                    'action_type' => 'approval for a job',
+                    'object_type' => 'Job', 
+                    'object_id' => $job->id, 
+                ]);
+                $company=$job->company()->first();
+                $company->notify(new JobApproved($job));
                 return response()->json([
                     'message' => 'enabled successfuly',
                 ], 200);
@@ -101,7 +111,7 @@ class JobController extends Controller
     {
         if ($company = Auth::guard('company')->user()) {
             $job = Job::where('id', $request->header('id'))->first();
-            if ($job && $job->company_id == $company->id) {
+            if ($job && $job->company_id == $company->id&&$job->status) {
                 $job->status = 0;
                 $job->save();
                 return response()->json([
@@ -114,7 +124,7 @@ class JobController extends Controller
             }
         } elseif (Auth::guard('admin')->user()) {
             $job = Job::where('id', $request->header('id'))->first();
-            if ($job) {
+            if ($job&&$job->status) {
                 $job->status = 0;
                 $job->disabled_by_admin = 1;
                 $job->save();

@@ -40,6 +40,7 @@ class ApproveRequest extends Notification
     {
         $company_name=$this->job->company()->first()->company_Name;
         return [
+            'message'=>'a job has been posted by '. $company_name,
             'company_name' => $company_name,
             'job_id' => $this->job->id,
             'job_title' => $this->job->job_title,
