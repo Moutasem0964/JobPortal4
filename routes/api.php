@@ -43,7 +43,7 @@ Route::put('admin/disable_user',[UserController::class,'disable']);
 Route::put('admin/enable_user',[UserController::class,'enable']);
 Route::post('admin/search',[AdminController::class,'search']);
 Route::delete('admin/delete_job',[JobController::class,'delete']);
-Route::get('admin/get_notifications',[NotificationController::class,'get_admin_notifications']);
+Route::get('get_notifications',[NotificationController::class,'get_notifications']);
 
 
 Route::post('user/register',[UserController::class,'register']);
