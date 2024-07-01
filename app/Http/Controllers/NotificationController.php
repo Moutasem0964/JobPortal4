@@ -53,9 +53,5 @@ class NotificationController extends Controller
             ], 401);
         }
     }
-    // public function get_company_notifications(){
-    //     if($company=Auth::guard('company')->user()){
-    //         $notific
-    //     }
-    // }
+    
 }

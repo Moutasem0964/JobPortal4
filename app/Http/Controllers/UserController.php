@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Job;
+use App\Notifications\NewApply;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -209,7 +210,8 @@ class UserController extends Controller
     public function apply(Request $request)
     {
         /** @var App\Models\User $user */
-        if ($user = Auth::guard('user')->user()) {
+        $user = Auth::guard('user')->user();
+        if ($user) {
             $job = Job::find($request->header('id'));
             if ($job && $job->status == 1) {
                 if ($user->educations()->get()->isEmpty() || $user->experiences()->get()->isEmpty() || $user->languages()->get()->isEmpty()) {
@@ -219,6 +221,10 @@ class UserController extends Controller
                 } elseif (!$user->cover_letter   && $job->cover_letter_required) {
                     return response()->json([
                         'message' => 'please enter your cover letter'
+                    ], 403);
+                } elseif (Application::where('user_id', $user->id)->where('job_id', $job->id)->exists()) {
+                    return response()->json([
+                        'message' => 'You have already applied for this job'
                     ], 403);
                 } else {
                     $experiences = $user->experiences()->get();
@@ -287,6 +293,9 @@ class UserController extends Controller
                         $application->company_id = $company_id;
                         $application->application_date = now();
                         $application->save();
+                        $company = $job->company()->first();
+                        $company->notify(new NewApply(Auth::guard('user')->user(), $job));
+
                         return response()->json([
                             'message' => 'your application has been sent'
                         ], 200);
