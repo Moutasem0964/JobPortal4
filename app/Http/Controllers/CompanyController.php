@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Company;
+use App\Notifications\AccountDisabled;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Js;
 
@@ -104,11 +106,18 @@ class CompanyController extends Controller
     }
     public function disable(Request $request)
     {
-        if (Auth::guard('admin')->user()) {
+        /** @var App\Models\Admin $admin */
+        if ($admin=Auth::guard('admin')->user()) {
             $company = Company::where('id', $request->header('id'))->first();
             if ($company) {
                 $company->status = 0;
                 $company->save();
+                $admin->AdminActions()->create([
+                    'action_type' => 'disable a compnay account',
+                    'object_type' => 'Company',
+                    'object_id' => $company->id,
+                ]);
+                $company->notify(new AccountDisabled());
                 return response()->json([
                     'message' => 'disabled successfuly',
                 ], 200);
@@ -126,7 +135,7 @@ class CompanyController extends Controller
     public function enable(Request $request)
     {
         if (Auth::guard('admin')->user()) {
-            $company = Company::where('id', $request->header('id'))->first();
+            $company = Company::where('id', $request->id)->first();
             if ($company) {
                 $company->status = 1;
                 $company->save();

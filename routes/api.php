@@ -29,21 +29,22 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::post('admin/login',[AdminController::class,'login']);
-Route::put('admin/enable_job',[JobController::class,'enable']);
-Route::put('admin/disable_job',[JobController::class,'disable']);
+Route::post('admin/enable_job',[JobController::class,'enable']);
+Route::post('admin/disable_job',[JobController::class,'disable']);
 Route::get('admin/list_all_users',[AdminController::class,'listAllUsers']);
-Route::delete('admin/delete_company',[CompanyController::class,'delete']);
-Route::delete('admin/delete_user',[UserController::class,'delete']);
+Route::post('admin/delete_company',[CompanyController::class,'delete']);
+Route::post('admin/delete_user',[UserController::class,'delete']);
 Route::get('admin/list_all_approve_requests',[AdminController::class,'list_all_approve_requests']);
 Route::get('admin/list_all_jobs',[JobController::class,'listAllJobs']);
 Route::get('admin/list_all_companies',[CompanyController::class,'listAllCompanies']);
-Route::put('admin/disable_company',[CompanyController::class,'disable']);
-Route::put('admin/enable_company',[CompanyController::class,'enable']);
-Route::put('admin/disable_user',[UserController::class,'disable']);
-Route::put('admin/enable_user',[UserController::class,'enable']);
+Route::post('admin/disable_company',[CompanyController::class,'disable']);
+Route::post('admin/enable_company',[CompanyController::class,'enable']);
+Route::post('admin/disable_user',[UserController::class,'disable']);
+Route::post('admin/enable_user',[UserController::class,'enable']);
 Route::post('admin/search',[AdminController::class,'search']);
 Route::delete('admin/delete_job',[JobController::class,'delete']);
 Route::get('get_notifications',[NotificationController::class,'get_notifications']);
+Route::post('admin/list_all_company_jobs',[JobController::class,'list_all_company_jobs']);
 
 
 Route::post('user/register',[UserController::class,'register']);
