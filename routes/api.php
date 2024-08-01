@@ -89,5 +89,6 @@ Route::get('view_profile',[UserController::class,'viewProfile']);
 Route::post('update_profile',[UserController::class,'updateProfile']);
 Route::post('search_for_company',[CompanyController::class,'search_for_company']);
 Route::post('search_for_job',[JobController::class,'search_for_job']);
+Route::post('markAsRead',[NotificationController::class,'markAsRead']);
 
 

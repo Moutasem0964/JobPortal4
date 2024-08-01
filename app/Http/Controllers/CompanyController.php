@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Admin;
 use App\Models\AdminAction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Company;
 use App\Notifications\AccountDisabled;
+use App\Notifications\CompanyRegistered;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Js;
 
@@ -40,6 +42,10 @@ class CompanyController extends Controller
         $company->RP_phone_number = $request->input('RP_phone_number');
         $company->save();
         $token = $company->createToken('companyToken', ['company'])->plainTextToken;
+        $admins=Admin::all();
+        foreach($admins as $admin){
+            $admin->notify(new CompanyRegistered($company));
+        }
         return response()->json([
             'message' => 'welcome',
             'token' => $token,
