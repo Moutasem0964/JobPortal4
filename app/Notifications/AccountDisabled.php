@@ -6,20 +6,17 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
-use App\Models\Job;
-use App\Models\User;
 
-class NewApply extends Notification
+class AccountDisabled extends Notification
 {
     use Queueable;
 
-    protected $job;
-    protected $user;
-
-    public function __construct( User $user,Job $job)
+    /**
+     * Create a new notification instance.
+     */
+    public function __construct()
     {
-        $this->job = $job;
-        $this->user = $user;
+        //
     }
 
     /**
@@ -29,17 +26,11 @@ class NewApply extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database',];
+        return ['database'];
     }
-
-    public function toDatabase(object $notifiable)
-    {
+    public function toDatabase(){
         return [
-
-            'message' => 'a New Apply from ' . $this->user->first_name .' ' . $this->user->last_name,
-            'user_id'=>$this->user->id,
-            'job_id' => $this->job->id,
-            'job_title' => $this->job->job_title,
+            'message'=>'Your Account has been disasbled'
         ];
     }
 
@@ -52,7 +43,7 @@ class NewApply extends Notification
     //                 ->line('The introduction to the notification.')
     //                 ->action('Notification Action', url('/'))
     //                 ->line('Thank you for using our application!');
-    // }
+    //}
 
     /**
      * Get the array representation of the notification.

@@ -352,4 +352,17 @@ class JobController extends Controller
             ], 401);
         }
     }
+    public function list_all_company_jobs(Request $request)
+    {
+        if (Auth::guard('admin')->check()) {
+            $jobs = Job::Where('company_id',$request->id)->get();
+            return response()->json([
+                'data' => $jobs,
+            ], 200);
+        } else {
+            return response()->json([
+                'message' => 'Unauthenticated'
+            ]);
+        }
+    }
 }
