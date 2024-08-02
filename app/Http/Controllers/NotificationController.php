@@ -48,6 +48,22 @@ class NotificationController extends Controller
                 'data' => $notificationObjects
             ], 200);
         } elseif ($user = Auth::guard('user')->user()) {
+            $notifications = $user->notifications->where('notifiable_type', 'App\Models\User');
+            foreach ($notifications as $notification) {
+                $notificationObjects[] = [
+                    'id' => $notification->id,
+                    'type' => $notification->type,
+                    'notifiable_type' => $notification->notifiable_type,
+                    'notifiable_id' => $notification->notifiable_id,
+                    'data' => $notification->data,
+                    'read_at' => $notification->read_at,
+                    'created_at' => $notification->created_at,
+                    'updated_at' => $notification->updated_at,
+                ];
+            }
+            return response()->json([
+                'data' => $notificationObjects
+            ], 200);
         } else {
             return response()->json([
                 'message' => 'Unauthenticated'
