@@ -10,6 +10,7 @@ use App\Models\Job;
 use App\Models\Company;
 use App\Notifications\ApproveRequest;
 use App\Notifications\JobApproved;
+use App\Notifications\JobDeleted;
 use App\Notifications\JobDisabled;
 
 class JobController extends Controller
@@ -216,10 +217,17 @@ class JobController extends Controller
 
                 ], 404);
             }
-        } elseif (Auth::guard('admin')->user()) {
+        } elseif ($admin=Auth::guard('admin')->user()) {
             $job = Job::where('id', $request->header('id'))->first();
             if ($job) {
+                $company=$job->company()->first();
                 $job->delete();
+                $admin->AdminActions()->create([
+                    'action_type' => 'delete a job',
+                    'object_type' => 'Job',
+                    'object_id' => $job->id,
+                ]);
+                $company->notify(new JobDeleted($job));
                 return response()->json([
                     'message' => 'deleted successfuly',
                 ], 200);

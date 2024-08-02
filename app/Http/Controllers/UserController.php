@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AdminAction;
 use App\Models\Application;
 use App\Models\TargetJob;
 use Illuminate\Http\Request;
@@ -10,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Job;
 use App\Notifications\AccountDisabled;
+use App\Notifications\AccountEnabled;
 use App\Notifications\NewApply;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -88,10 +90,15 @@ class UserController extends Controller
     }
     public function delete(Request $request)
     {
-        if (Auth::guard('admin')->user()) {
+        if ($admin=Auth::guard('admin')->user()) {
             $user = User::where('id', $request->header('id'))->first();
             if ($user) {
                 $user->delete();
+                $admin->AdminActions()->create([
+                    'action_type' => 'delete a user account',
+                    'object_type' => 'user',
+                    'object_id' => $user->id,
+                ]);
                 return response()->json([
                     'message' => 'deleted successfuly'
                 ], 200);
@@ -114,8 +121,7 @@ class UserController extends Controller
             if ($user) {
                 $user->status = 0;
                 $user->save();
-                $admin->AdminActions->create([
-                    'admin_id' => $admin->id,
+                $admin->AdminActions()->create([
                     'action_type' => 'disable a user account',
                     'object_type' => 'User',
                     'object_id' => $user->id
@@ -137,11 +143,17 @@ class UserController extends Controller
     }
     public function enable(Request $request)
     {
-        if (Auth::guard('admin')->user()) {
+        if ($admin=Auth::guard('admin')->user()) {
             $user = User::where('id', $request->header('id'))->first();
             if ($user) {
                 $user->status = 1;
                 $user->save();
+                $admin->AdminActions()->create([
+                    'action_type' => 'enable a user account',
+                    'object_type' => 'User',
+                    'object_id' => $user->id,
+                ]);
+                $user->notify(new AccountEnabled());
                 return response()->json([
                     'message' => 'enabled successfuly',
                 ], 200);

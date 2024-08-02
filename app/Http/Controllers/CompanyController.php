@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Company;
 use App\Notifications\AccountDisabled;
+use App\Notifications\AccountEnabled;
 use App\Notifications\CompanyRegistered;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Js;
@@ -92,10 +93,15 @@ class CompanyController extends Controller
 
     public function delete(Request $request)
     {
-        if (Auth::guard('admin')->user()) {
+        if ($admin=Auth::guard('admin')->user()) {
             $company = Company::Where('id', $request->header('id'))->first();
             if ($company) {
                 $company->delete();
+                $admin->AdminActions()->create([
+                    'action_type' => 'delete a company account',
+                    'object_type' => 'Company',
+                    'object_id' => $company->id,
+                ]);
                 return response()->json([
                     'messgae' => 'deleted successfuly',
                 ], 200);
@@ -140,11 +146,17 @@ class CompanyController extends Controller
     }
     public function enable(Request $request)
     {
-        if (Auth::guard('admin')->user()) {
+        if ($admin=Auth::guard('admin')->user()) {
             $company = Company::where('id', $request->id)->first();
             if ($company) {
                 $company->status = 1;
                 $company->save();
+                $admin->AdminActions()->create([
+                    'action_type' => 'enable a company account',
+                    'object_type' => 'Company',
+                    'object_id' => $company->id,
+                ]);
+                $company->notify(new AccountEnabled());
                 return response()->json([
                     'message' => 'enabled successfuly',
                 ], 200);
