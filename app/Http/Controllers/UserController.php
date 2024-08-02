@@ -109,16 +109,16 @@ class UserController extends Controller
     public function disable(Request $request)
     {
         /** @var APP\Models\Admin $admin */
-        if ($admin=Auth::guard('admin')->user()) {
+        if ($admin = Auth::guard('admin')->user()) {
             $user = User::where('id', $request->header('id'))->first();
             if ($user) {
                 $user->status = 0;
                 $user->save();
                 $admin->AdminActions->create([
-                    'admin_id'=>$admin->id,
-                    'action_type'=>'disable a user account',
-                    'object_type'=>'User',
-                    'object_id'=>$user->id
+                    'admin_id' => $admin->id,
+                    'action_type' => 'disable a user account',
+                    'object_type' => 'User',
+                    'object_id' => $user->id
                 ]);
                 $user->notify(new AccountDisabled());
                 return response()->json([

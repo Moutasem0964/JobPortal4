@@ -42,8 +42,8 @@ class CompanyController extends Controller
         $company->RP_phone_number = $request->input('RP_phone_number');
         $company->save();
         $token = $company->createToken('companyToken', ['company'])->plainTextToken;
-        $admins=Admin::all();
-        foreach($admins as $admin){
+        $admins = Admin::all();
+        foreach ($admins as $admin) {
             $admin->notify(new CompanyRegistered($company));
         }
         return response()->json([
@@ -113,7 +113,7 @@ class CompanyController extends Controller
     public function disable(Request $request)
     {
         /** @var App\Models\Admin $admin */
-        if ($admin=Auth::guard('admin')->user()) {
+        if ($admin = Auth::guard('admin')->user()) {
             $company = Company::where('id', $request->header('id'))->first();
             if ($company) {
                 $company->status = 0;
@@ -172,23 +172,32 @@ class CompanyController extends Controller
             'RP_last_name' => 'sometimes|required|max:255',
             'RP_job_title' => 'sometimes|required|max:255',
             'RP_phone_number' => 'sometimes|required|numeric',
+            'photo_path' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
 
-
-
         $validatedData = $request->validate($rules);
-        /** @var App\Models\Company */
-        if ($company = Auth::guard('company')->user()) {
-            // Get only the fields that were sent with the request
-            $dataToUpdate = $request->only(array_keys($validatedData));
 
-            // Hash password if it's present in the data to update
-            if (isset($dataToUpdate['password'])) {
-                $dataToUpdate['password'] = Hash::make($dataToUpdate['password']);
+        if ($company = Auth::guard('company')->user()) {
+            if ($request->hasFile('photo_path')) {
+                $profilePhotoPath = $request->file('photo_path')->store('photos', 'public');
+                if ($profilePhotoPath) {
+                    $company->photo_path = $profilePhotoPath;
+                } else {
+                    return response()->json(['error' => 'File upload failed'], 500);
+                }
+                \Log::info('Profile photo path: ' . $profilePhotoPath);
             }
 
-            // Update the company with the data to update
-            $company->fill($dataToUpdate);
+            foreach ($validatedData as $key => $value) {
+                if ($request->has($key)) {
+                    if ($key == 'password') {
+                        $company->$key = Hash::make($value);
+                    } else {
+                        $company->$key = $value;
+                    }
+                }
+            }
+
             $company->save();
 
             return response()->json(['message' => 'Profile updated successfully'], 200);
@@ -196,6 +205,7 @@ class CompanyController extends Controller
             return response()->json(['error' => 'Unauthenticated'], 401);
         }
     }
+
     public function list_compnay_details(Request $request)
     {
         if (Auth::guard('user')->check() || Auth::guard('company')->check() || Auth::guard('admin')->check()) {
@@ -241,10 +251,10 @@ class CompanyController extends Controller
     public function search_for_Company(Request $request)
     {
         if (Auth::guard('user')->check() || Auth::guard('company')->check()) {
-            $validated=$request->validate([
-                'query'=>'required'
+            $validated = $request->validate([
+                'query' => 'required'
             ]);
-            $query=$validated['query'];
+            $query = $validated['query'];
             $results = Company::where('company_Name', 'like', "%{$query}%")->limit(10)->get();
             return response()->json([
                 'suggestions' => $results
