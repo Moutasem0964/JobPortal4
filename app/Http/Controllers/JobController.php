@@ -155,27 +155,10 @@ class JobController extends Controller
     public function listALLJobs()
     {
         if (Auth::guard('company')->check() || Auth::guard('user')->check()) {
-            $jobs = Job::where('status', 1)->get()->map(function ($job) {
-                return collect($job)->only(['job_title', 'employment', 'company_id']);
-            })->map(function ($job) {
-                return (object)$job->toArray();
-            });
-            $jobsWithCompany = [];
-            foreach ($jobs as $job) {
-                $company_id = $job->company_id;
-                $company = Company::where('id', $company_id)->first();
-                if ($company) {
-                    $company_name = $company->company_Name;
-                    $jobWithCompany = [
-                        'job_title' => $job->job_title,
-                        'employment' => $job->employment,
-                        'company_name' => $company_name
-                    ];
-                    array_push($jobsWithCompany, $jobWithCompany);
-                }
-            }
+            $jobs = Job::where('status', 1)->with('company')->get();
+
             return response()->json([
-                'data' => $jobsWithCompany,
+                'data' => $jobs
             ], 200);
         } elseif (Auth::guard('admin')->check()) {
             $jobs = Job::all(['job_title', 'employment', 'company_id']);
@@ -217,10 +200,10 @@ class JobController extends Controller
 
                 ], 404);
             }
-        } elseif ($admin=Auth::guard('admin')->user()) {
+        } elseif ($admin = Auth::guard('admin')->user()) {
             $job = Job::where('id', $request->header('id'))->first();
             if ($job) {
-                $company=$job->company()->first();
+                $company = $job->company()->first();
                 $job->delete();
                 $admin->AdminActions()->create([
                     'action_type' => 'delete a job',
@@ -306,51 +289,40 @@ class JobController extends Controller
     public function list_my_jobs()
     {
         /** @var App\Models\User $user */
-        if ($user = Auth::guard('user')->user()) {
+        $user = Auth::guard('user')->user();
+
+        if ($user) {
             $targetJob = $user->targetJob()->first();
             if ($targetJob) {
                 $jobRoles = $targetJob->Job_roles;
 
-                $jobDetails = [];
+                $jobDetails = Job::whereIn('employment', $jobRoles)
+                    ->where('status', 1)
+                    ->with('company')
+                    ->get()
+                    ->map(function ($job) {
+                        return [
+                            'job' => $job,
+                        ];
+                    });
 
-                foreach ($jobRoles as $jobRole) {
-                    // Retrieve jobs based on the employment role
-                    $jobs = Job::where('employment', $jobRole)->where('status', 1)->get();
-                    foreach ($jobs as $job) {
-                        // Retrieve the company associated with each job
-                        $company = $job->company()->first();
-
-                        if ($company && $company->status == 1) {
-                            // Add job details (including company name) to the array
-                            $jobDetails[] = [
-                                'job_id' => $job->id,
-                                'job_title' => $job->job_title,
-                                'job_role' => $jobRole,
-                                'job_level' => $job->career_level,
-                                'experience_years' => $job->experience_years,
-                                'company_name' => $company->company_Name,
-                            ];
-                        }
-                    }
-                }
-
-                // Now $jobDetails contains job titles and corresponding company names
                 return response()->json([
                     'data' => $jobDetails,
                 ], 200);
             }
-        } else {
-            return response()->json([
-                'message' => 'Unauthenticated'
-            ], 401);
         }
+
+        return response()->json([
+            'message' => 'Unauthenticated'
+        ], 401);
     }
+
     public function search_for_job(Request $request)
     {
         if (Auth::guard('user')->check() || Auth::guard('company')->check()) {
             $validatedData = $request->validate(['query' => 'required']);
             $query = $validatedData['query'];
-            $results = Job::where('job_title', 'like', "%{$query}%")->get();
+            $results = Job::where('job_title', 'like', "%{$query}%")->with('company')->get();
             return response()->json([
                 'suggestions' => $results
             ], 200);
@@ -363,7 +335,7 @@ class JobController extends Controller
     public function list_all_company_jobs(Request $request)
     {
         if (Auth::guard('admin')->check()) {
-            $jobs = Job::Where('company_id',$request->id)->get();
+            $jobs = Job::Where('company_id', $request->id)->get();
             return response()->json([
                 'data' => $jobs,
             ], 200);

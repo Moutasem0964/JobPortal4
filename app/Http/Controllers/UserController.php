@@ -90,7 +90,7 @@ class UserController extends Controller
     }
     public function delete(Request $request)
     {
-        if ($admin=Auth::guard('admin')->user()) {
+        if ($admin = Auth::guard('admin')->user()) {
             $user = User::where('id', $request->header('id'))->first();
             if ($user) {
                 $user->delete();
@@ -143,7 +143,7 @@ class UserController extends Controller
     }
     public function enable(Request $request)
     {
-        if ($admin=Auth::guard('admin')->user()) {
+        if ($admin = Auth::guard('admin')->user()) {
             $user = User::where('id', $request->header('id'))->first();
             if ($user) {
                 $user->status = 1;
@@ -340,20 +340,23 @@ class UserController extends Controller
     public function list_applied_jobs()
     {
         /** @var App\Models\User $user */
-        if ($user = Auth::guard('user')->user()) {
-            $applications = $user->applications()->get();
-            $appliedJobs = [];
-            foreach ($applications as $application) {
-                $appliedJobs[] = $application->job;
-            }
+        $user = Auth::guard('user')->user();
+        if ($user) {
+            $appliedJobs = $user->applications()
+                ->with('job.company')
+                ->get()
+                ->map(function ($application) {
+                    return [
+                        'job' => $application->job,
+                    ];
+                });
             return response()->json([
                 'data' => $appliedJobs
             ], 200);
-        } else {
-            return response()->json([
-                'messsage' => 'Unauthenticated'
-            ], 401);
         }
+        return response()->json([
+            'message' => 'Unauthenticated'
+        ], 401);
     }
     public function list_user_details(Request $request)
     {
