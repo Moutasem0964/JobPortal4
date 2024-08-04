@@ -190,16 +190,6 @@ class CompanyController extends Controller
         $validatedData = $request->validate($rules);
 
         if ($company = Auth::guard('company')->user()) {
-            if ($request->hasFile('photo_path')) {
-                $profilePhotoPath = $request->file('photo_path')->store('photos', 'public');
-                if ($profilePhotoPath) {
-                    $company->photo_path = $profilePhotoPath;
-                } else {
-                    return response()->json(['error' => 'File upload failed'], 500);
-                }
-                \Log::info('Profile photo path: ' . $profilePhotoPath);
-            }
-
             foreach ($validatedData as $key => $value) {
                 if ($request->has($key)) {
                     if ($key == 'password') {
@@ -208,6 +198,16 @@ class CompanyController extends Controller
                         $company->$key = $value;
                     }
                 }
+            }
+            if ($request->hasFile('photo_path')) {
+                $file=$request->file('photo_path');
+                $path = $file->store('photos', 'public');
+                if ($path) {
+                    $company->photo_path = $path;
+                } else {
+                    return response()->json(['error' => 'File upload failed'], 500);
+                }
+                \Log::info('Profile photo path: ' . $company->photo_path);
             }
 
             $company->save();
