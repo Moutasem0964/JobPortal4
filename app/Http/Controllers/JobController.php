@@ -335,14 +335,33 @@ class JobController extends Controller
     public function list_all_company_jobs(Request $request)
     {
         if (Auth::guard('admin')->check()) {
-            $jobs = Job::Where('company_id', $request->id)->get();
-            return response()->json([
-                'data' => $jobs,
-            ], 200);
+            $company = Company::find($request->id);
+            if ($company) {
+                $jobs = $company->jobs()->get();
+                return response()->json([
+                    'data' => $jobs
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'wrong id'
+                ], 404);
+            }
+        } elseif (Auth::guard('user')->check() || Auth::guard('company')->check()) {
+            $company = Company::find($request->id);
+            if ($company) {
+                $jobs = $company->jobs()->get();
+                return response()->json([
+                    'data' => $jobs
+                ], 200);
+            } else {
+                return response()->json([
+                    'message' => 'wrong id'
+                ], 404);
+            }
         } else {
             return response()->json([
                 'message' => 'Unauthenticated'
-            ]);
+            ], 401);
         }
     }
 }
