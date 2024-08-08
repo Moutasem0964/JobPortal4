@@ -205,11 +205,7 @@ class UserController extends Controller
                 'photo' => 'sometimes|nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
 
             ]);
-            if ($request->hasFile('photo')) {
-                $profilePhotoPath = $request->file('photo')->store('photos', 'public');
-                $user->photo = $profilePhotoPath;
-                $user->save();
-            }
+            
             foreach ($validatedData as $key => $value) {
                 if ($request->has($key)) {
                     if ($key == 'password') {
@@ -218,6 +214,10 @@ class UserController extends Controller
                         $user->$key = $value;
                     }
                 }
+            }
+            if ($request->hasFile('photo')) {
+                $profilePhotoPath = $request->file('photo')->store('profile_photos', 'public');
+                $user->photo = $profilePhotoPath;
             }
 
             $user->save();
