@@ -83,7 +83,7 @@ class JobController extends Controller
             }
         } elseif ($admin = Auth::guard('admin')->user()) {
             /** @var App\Models\Admin $admin */
-            $job = Job::where('id', $request->header('id'))->first();
+            $job = Job::where('id', $request->id)->first();
             if ($job && !$job->status) {
                 $job->status = 1;
                 $job->disabled_by_admin = 0;
@@ -126,7 +126,7 @@ class JobController extends Controller
             }
         } elseif ($admin = Auth::guard('admin')->user()) {
             /** @var App\Models\Admin $admin */
-            $job = Job::where('id', $request->header('id'))->first();
+            $job = Job::where('id', $request->id)->first();
             if ($job && $job->status) {
                 $job->status = 0;
                 $job->disabled_by_admin = 1;
