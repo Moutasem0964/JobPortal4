@@ -201,7 +201,7 @@ class JobController extends Controller
                 ], 404);
             }
         } elseif ($admin = Auth::guard('admin')->user()) {
-            $job = Job::where('id', $request->header('id'))->first();
+            $job = Job::where('id', $request->id)->first();
             if ($job) {
                 $company = $job->company()->first();
                 $job->delete();
