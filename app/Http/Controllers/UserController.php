@@ -91,7 +91,7 @@ class UserController extends Controller
     public function delete(Request $request)
     {
         if ($admin = Auth::guard('admin')->user()) {
-            $user = User::where('id', $request->header('id'))->first();
+            $user = User::where('id', $request->id)->first();
             if ($user) {
                 $user->delete();
                 $admin->AdminActions()->create([
@@ -117,7 +117,7 @@ class UserController extends Controller
     {
         /** @var APP\Models\Admin $admin */
         if ($admin = Auth::guard('admin')->user()) {
-            $user = User::where('id', $request->header('id'))->first();
+            $user = User::where('id', $request->id)->first();
             if ($user) {
                 $user->status = 0;
                 $user->save();
@@ -144,7 +144,7 @@ class UserController extends Controller
     public function enable(Request $request)
     {
         if ($admin = Auth::guard('admin')->user()) {
-            $user = User::where('id', $request->header('id'))->first();
+            $user = User::where('id', $request->id)->first();
             if ($user) {
                 $user->status = 1;
                 $user->save();
