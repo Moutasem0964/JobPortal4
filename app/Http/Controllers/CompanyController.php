@@ -94,7 +94,7 @@ class CompanyController extends Controller
     public function delete(Request $request)
     {
         if ($admin=Auth::guard('admin')->user()) {
-            $company = Company::Where('id', $request->header('id'))->first();
+            $company = Company::Where('id', $request->id)->first();
             if ($company) {
                 $company->delete();
                 $admin->AdminActions()->create([
@@ -120,7 +120,7 @@ class CompanyController extends Controller
     {
         /** @var App\Models\Admin $admin */
         if ($admin = Auth::guard('admin')->user()) {
-            $company = Company::where('id', $request->header('id'))->first();
+            $company = Company::where('id', $request->id)->first();
             if ($company) {
                 $company->status = 0;
                 $company->save();
