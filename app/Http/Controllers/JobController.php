@@ -166,6 +166,7 @@ class JobController extends Controller
 
 
 
+
             return response()->json([
                 'data' => $jobs
             ], 200);
