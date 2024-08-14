@@ -155,7 +155,10 @@ class JobController extends Controller
     public function listALLJobs()
     {
         if (Auth::guard('company')->check() || Auth::guard('user')->check()) {
-            $jobs = Job::where('status', 1)->with('company')->get();
+            $jobs = Job::where('status', 1)
+                ->whereHas('company', function ($query) {
+                    $query->where('status', 1);
+                })->with('company')->get();
 
             return response()->json([
                 'data' => $jobs
@@ -349,7 +352,7 @@ class JobController extends Controller
         } elseif (Auth::guard('user')->check() || Auth::guard('company')->check()) {
             $company = Company::find($request->id);
             if ($company) {
-                $jobs = $company->jobs()->where('status',1)->get();
+                $jobs = $company->jobs()->where('status', 1)->get();
                 return response()->json([
                     'data' => $jobs
                 ], 200);
