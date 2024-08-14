@@ -349,7 +349,7 @@ class JobController extends Controller
         } elseif (Auth::guard('user')->check() || Auth::guard('company')->check()) {
             $company = Company::find($request->id);
             if ($company) {
-                $jobs = $company->jobs()->get();
+                $jobs = $company->jobs()->where('status',1)->get();
                 return response()->json([
                     'data' => $jobs
                 ], 200);
