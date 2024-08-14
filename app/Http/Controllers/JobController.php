@@ -158,7 +158,13 @@ class JobController extends Controller
             $jobs = Job::where('status', 1)
                 ->whereHas('company', function ($query) {
                     $query->where('status', 1);
-                })->with('company')->get();
+                })
+                ->with(['company' => function ($query) {
+                    $query->where('status', 1);
+                }])
+                ->get();
+
+
 
             return response()->json([
                 'data' => $jobs
