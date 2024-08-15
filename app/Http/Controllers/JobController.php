@@ -321,6 +321,19 @@ class JobController extends Controller
                 ], 200);
             }
         }
+        elseif($company=Auth::guard('company')->user()){
+            $jobs=$company->jobs()->get();
+            if($jobs){
+                return response()->json([
+                    'data'=>$jobs
+                ],200);
+            }
+            else{
+                return response()->json([
+                    'message' => 'there are no jobs'
+                ], 404);
+            }
+        }
 
         return response()->json([
             'message' => 'Unauthenticated'
