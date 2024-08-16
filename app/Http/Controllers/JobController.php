@@ -303,27 +303,28 @@ class JobController extends Controller
 
         if ($user) {
             $targetJob = $user->targetJob()->first();
-            if ($targetJob) {
-                $jobRoles = $targetJob->Job_roles;
 
-                $jobDetails = Job::whereIn('employment', $jobRoles)
-                    ->where('status', 1)
-                    ->with('company')
-                    ->get();
+            if (!$targetJob) {
+                return response()->json(['message' => 'No target job found for the user'], 404);
+            }
 
+            $jobRoles = $targetJob->Job_roles;
+
+            $jobDetails = Job::whereIn('employment', $jobRoles)
+                ->where('status', 1)
+                ->with('company')
+                ->get();
+
+            return response()->json([
+                'data' => $jobDetails,
+            ], 200);
+        } elseif ($company = Auth::guard('company')->user()) {
+            $jobs = $company->jobs()->get();
+            if ($jobs) {
                 return response()->json([
-                    'data' => $jobDetails,
+                    'data' => $jobs
                 ], 200);
-            }
-        }
-        elseif($company=Auth::guard('company')->user()){
-            $jobs=$company->jobs()->get();
-            if($jobs){
-                return response()->json([
-                    'data'=>$jobs
-                ],200);
-            }
-            else{
+            } else {
                 return response()->json([
                     'message' => 'there are no jobs'
                 ], 404);
