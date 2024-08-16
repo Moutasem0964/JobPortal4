@@ -309,12 +309,7 @@ class JobController extends Controller
                 $jobDetails = Job::whereIn('employment', $jobRoles)
                     ->where('status', 1)
                     ->with('company')
-                    ->get()
-                    ->map(function ($job) {
-                        return [
-                            'job' => $job,
-                        ];
-                    });
+                    ->get();
 
                 return response()->json([
                     'data' => $jobDetails,
